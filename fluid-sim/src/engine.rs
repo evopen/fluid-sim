@@ -14,7 +14,6 @@ pub struct Engine {
     pipeline: wgpu::RenderPipeline,
     device: wgpu::Device,
     queue: wgpu::Queue,
-    particle_buffer: wgpu::Buffer,
 }
 
 impl Engine {
@@ -109,12 +108,6 @@ impl Engine {
 
         let sph_solver = Solver::new(500);
 
-        let particle_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Particle buffer"),
-            contents: bytemuck::cast_slice(&sph_solver.particles),
-            usage: wgpu::BufferUsage::VERTEX | wgpu::BufferUsage::COPY_DST,
-        });
-
         Self {
             window_size,
             swap_chain,
@@ -123,7 +116,6 @@ impl Engine {
             pipeline,
             device,
             queue,
-            particle_buffer,
         }
     }
 
@@ -138,14 +130,11 @@ impl Engine {
             .create_command_encoder(&CommandEncoderDescriptor {
                 label: Some("Main Encoder"),
             });
-        let tmp_buf = self.device.create_buffer_init(&BufferInitDescriptor {
+        let particle_buf = self.device.create_buffer_init(&BufferInitDescriptor {
             label: Some("Temp Buffer"),
             contents: bytemuck::cast_slice(&self.sph_solver.particles),
-            usage: wgpu::BufferUsage::COPY_SRC,
+            usage: wgpu::BufferUsage::VERTEX,
         });
-
-        let size = std::mem::size_of_val(&*self.sph_solver.particles);
-        encoder.copy_buffer_to_buffer(&tmp_buf, 0, &self.particle_buffer, 0, size as u64);
 
         {
             let mut render_pass = encoder.begin_render_pass(&RenderPassDescriptor {
@@ -160,7 +149,7 @@ impl Engine {
                 depth_stencil_attachment: None,
             });
             render_pass.set_pipeline(&self.pipeline);
-            render_pass.set_vertex_buffer(0, self.particle_buffer.slice(..));
+            render_pass.set_vertex_buffer(0, particle_buf.slice(..));
             render_pass.draw(0..self.sph_solver.particles.len() as u32, 0..1);
         }
 

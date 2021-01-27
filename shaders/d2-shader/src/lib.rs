@@ -20,9 +20,14 @@ pub fn main_fs(mut output: Output<Vec4>) {
 
 #[allow(unused_attributes)]
 #[spirv(vertex)]
-pub fn main_vs(a_pos: Input<Vec2>, #[spirv(position)] mut out_pos: Output<Vec4>) {
+pub fn main_vs(
+    a_pos: Input<Vec2>,
+    #[spirv(position)] mut out_pos: Output<Vec4>,
+    #[spirv(point_size)] mut out_point_size: Output<f32>,
+) {
     let mut a_pos = a_pos.load();
     a_pos /= vec2(800.0, 600.0) * 1.5;
     a_pos = (a_pos * 2.0) - vec2(1.0, 1.0);
     out_pos.store(vec4(a_pos.x, a_pos.y, 0.0, 1.0));
+    out_point_size.store(3.0);
 }
