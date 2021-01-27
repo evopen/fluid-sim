@@ -1,4 +1,9 @@
 [workspace]
 members = [
-    "fluid-sim"
+    "fluid-sim",
+    "shaders/d2-shader",
+]
+
+exclude = [
+    "rust-gpu"
 ]

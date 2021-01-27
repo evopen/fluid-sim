@@ -52,10 +52,8 @@ impl Engine {
         };
         let swap_chain = device.create_swap_chain(&surface, &swap_chain_desc);
 
-        let vertex_stage =
-            device.create_shader_module(wgpu::include_spirv!("shader/shader.vert.spv"));
-        let frag_stage =
-            device.create_shader_module(wgpu::include_spirv!("shader/shader.frag.spv"));
+        let shader_module =
+            device.create_shader_module(wgpu::include_spirv!(env!("d2_shader.spv")));
 
         let pipeline_layout = device.create_pipeline_layout(&PipelineLayoutDescriptor {
             label: Some("Main Pipeline Layout"),
@@ -67,12 +65,12 @@ impl Engine {
             label: Some("Main Pipeline"),
             layout: Some(&pipeline_layout),
             vertex_stage: wgpu::ProgrammableStageDescriptor {
-                module: &vertex_stage,
-                entry_point: "main",
+                module: &shader_module,
+                entry_point: "main_vs",
             },
             fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
-                module: &frag_stage,
-                entry_point: "main",
+                module: &shader_module,
+                entry_point: "main_fs",
             }),
             rasterization_state: Some(wgpu::RasterizationStateDescriptor {
                 front_face: wgpu::FrontFace::Ccw,
